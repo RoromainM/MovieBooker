@@ -18,14 +18,14 @@ export class AuthService {
     ) {}
 
     async register(registerDto: RegisterDto): Promise<User> {
-        const { id, email, username, password } = registerDto;
+        const { email, username, password } = registerDto;
         const existingUser = await this.userService.findOne(username);
         if (existingUser) {
           throw new UnauthorizedException('User already exists');
         }
     
         const hashedPassword = await bcrypt.hash(password, 10);
-        const newUser = { id, email, username, password: hashedPassword };
+        const newUser = { email, username, password: hashedPassword };
         return this.userService.createUser(newUser);
     }
     

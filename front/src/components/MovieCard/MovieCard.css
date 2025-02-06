@@ -1,0 +1,32 @@
+.movie-card-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.movie-card {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  overflow: hidden;
+  width: 200px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.movie-poster {
+  width: 100%;
+  height: auto;
+}
+
+.movie-details {
+  padding: 16px;
+}
+
+.movie-details h2 {
+  font-size: 18px;
+  margin: 0 0 8px;
+}
+
+.movie-details p {
+  margin: 0;
+  color: #555;
+}
