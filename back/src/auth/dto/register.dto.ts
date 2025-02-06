@@ -2,9 +2,6 @@ import { ApiProperty } from "@nestjs/swagger";
 
 export class RegisterDto {
 
-    @ApiProperty({ description: 'The id of the user', required: true, type: 'number', example: 1 })
-    id: number;
-
     @ApiProperty({ description: 'The email of the user', required: true, example: 'user@example.com' })
     email: string;
 

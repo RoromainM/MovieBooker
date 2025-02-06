@@ -1,8 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateReservationDto } from './dto/create-reservation.dto';
 import { UpdateReservationDto } from './dto/update-reservation.dto';
-import { Reservation } from './interface/reservation.interface';
+import { Reservation } from '@prisma/client';
 
 @Injectable()
 export class ReservationService {
@@ -30,12 +30,16 @@ export class ReservationService {
       },
     });
     if (!reservation) {
-      throw new Error(`Reservation with ID ${id} not found`);
+      throw new NotFoundException(`Reservation with ID ${id} not found`);
     }
     return reservation;
   }
 
   async update(id: number, updateReservationDto: UpdateReservationDto): Promise<Reservation> {
+    const reservation = await this.prisma.reservation.findUnique({ where: { id } });
+    if (!reservation) {
+      throw new NotFoundException(`Reservation with ID ${id} not found`);
+    }
     return this.prisma.reservation.update({
       where: { id },
       data: updateReservationDto,
@@ -46,6 +50,10 @@ export class ReservationService {
   }
 
   async remove(id: number): Promise<Reservation> {
+    const reservation = await this.prisma.reservation.findUnique({ where: { id } });
+    if (!reservation) {
+      throw new NotFoundException(`Reservation with ID ${id} not found`);
+    }
     return this.prisma.reservation.delete({
       where: { id },
     });

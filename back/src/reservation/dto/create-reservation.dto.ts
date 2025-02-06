@@ -1,11 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateReservationDto {
-  @ApiProperty({ example: 'John Doe' })
-  name: string;
-
-  @ApiProperty({ example: '2023-12-31T23:59:59Z' })
+  @ApiProperty({ example: '2023-12-31T10:00:00Z' })
   date: Date;
+
+  @ApiProperty({ example: '2023-12-31T12:00:00Z' })
+  endDate: Date;
 
   @ApiProperty({ example: 1 })
   userId: number;
