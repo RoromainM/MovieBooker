@@ -8,7 +8,7 @@ import 'slick-carousel/slick/slick-theme.css';
 interface Movie {
   id: number;
   title: string;
-  posterUrl: string;
+  poster_path: string;
 }
 
 const MovieCarousel: React.FC = () => {
@@ -18,7 +18,6 @@ const MovieCarousel: React.FC = () => {
     const fetchMovies = async () => {
       try {
         const response = await axios.get<{ results: Movie[] }>('http://localhost:3000/movies');
-        console.log('Movies fetched:', response.data.results);
         setMovies(response.data.results);
       } catch (error) {
         console.error('Error fetching movies:', error);
@@ -32,7 +31,7 @@ const MovieCarousel: React.FC = () => {
     dots: true,
     infinite: true,
     speed: 500,
-    slidesToShow: 3,
+    slidesToShow: 7,
     slidesToScroll: 1,
   };
 

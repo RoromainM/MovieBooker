@@ -1,15 +1,15 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { IsString, IsInt, IsDateString } from 'class-validator';
 
 export class CreateReservationDto {
+  @IsDateString()
   @ApiProperty({ example: '2023-12-31T10:00:00Z' })
-  date: Date;
+  date: string;
 
-  @ApiProperty({ example: '2023-12-31T12:00:00Z' })
-  endDate: Date;
-
-  @ApiProperty({ example: 1 })
-  userId: number;
-
+  @IsInt()
   @ApiProperty({ example: 12345 })
-  filmId: number;
+  movieId: number;
+
+  @IsString()
+  time: string;
 }

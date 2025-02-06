@@ -6,11 +6,18 @@ import { Reservation } from '@prisma/client';
 
 @Injectable()
 export class ReservationService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   async create(createReservationDto: CreateReservationDto): Promise<Reservation> {
     return this.prisma.reservation.create({
-      data: createReservationDto,
+      data: {
+        date: new Date(createReservationDto.date),
+        endDate: new Date(createReservationDto.date),
+        filmId: createReservationDto.movieId,
+        user: {
+          connect: { id: 1 },
+        },
+      },
     });
   }
 
@@ -36,16 +43,9 @@ export class ReservationService {
   }
 
   async update(id: number, updateReservationDto: UpdateReservationDto): Promise<Reservation> {
-    const reservation = await this.prisma.reservation.findUnique({ where: { id } });
-    if (!reservation) {
-      throw new NotFoundException(`Reservation with ID ${id} not found`);
-    }
     return this.prisma.reservation.update({
       where: { id },
       data: updateReservationDto,
-      include: {
-        user: true,
-      },
     });
   }
 

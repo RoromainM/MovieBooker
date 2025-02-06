@@ -7,11 +7,11 @@ import { ApiBearerAuth, ApiBody } from '@nestjs/swagger';
 
 @Controller('auth')
 export class AuthController {
-    constructor(private authService: AuthService) {}
+    constructor(private readonly authService: AuthService) {}
 
     @Post('register')
-    register(@Body() registerDto: RegisterDto) {
-        this.authService.register(registerDto);
+    async register(@Body() registerDto: RegisterDto) {
+        return this.authService.register(registerDto);
     }
 
     @HttpCode(HttpStatus.OK)
