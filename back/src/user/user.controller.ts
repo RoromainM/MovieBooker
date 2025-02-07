@@ -6,7 +6,7 @@ import { User } from '@prisma/client';
 export class UserController {
     constructor(private readonly userService: UserService) {}
 
-    @Get()
+  @Get()
   async findAll(): Promise<User[]> {
     return this.userService.findAll();
   }

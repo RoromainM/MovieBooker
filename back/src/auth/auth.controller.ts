@@ -20,11 +20,11 @@ export class AuthController {
         type: LoginDto,
     })
     async signIn(@Body() loginDto: { username: string; password: string }) {
-        return this.authService.login(loginDto.username, loginDto.password);
+        return this.authService.login(loginDto);
     }
 
     @UseGuards(JwtAuthGuard)
-    @ApiBearerAuth('access-token')
+    @ApiBearerAuth('JWT-auth')
     @Get('profile')
     getProfile(@Request() req) {
         return req.user;

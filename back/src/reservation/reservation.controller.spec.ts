@@ -87,6 +87,16 @@ describe('ReservationController', () => {
         userId: 1, 
         filmId: 12345 
       };
+      const mockUpdatedReservation: Reservation = {
+        id: 1,
+        filmId: updateReservationDto.filmId!,
+        date: updateReservationDto.date!,
+        endDate: updateReservationDto.endDate!,
+        userId: updateReservationDto.userId!,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+      jest.spyOn(service, 'update').mockResolvedValue(mockUpdatedReservation);
       await controller.update('1', updateReservationDto);
       expect(service.update).toHaveBeenCalledWith(1, updateReservationDto);
     });
@@ -96,7 +106,7 @@ describe('ReservationController', () => {
         date: new Date('2023-12-31T23:59:59Z'),
         endDate: new Date('2024-01-01T01:59:59Z')
       };
-      jest.spyOn(service, 'update').mockResolvedValue(null);
+      jest.spyOn(service, 'update').mockRejectedValue(new NotFoundException());
       
       await expect(controller.update('1', updateReservationDto))
         .rejects.toThrow(NotFoundException);
@@ -105,12 +115,22 @@ describe('ReservationController', () => {
 
   describe('remove', () => {
     it('should call ReservationService.remove with correct parameters', async () => {
+      const mockDeletedReservation: Reservation = {
+        id: 1,
+        filmId: 12345,
+        date: new Date(),
+        endDate: new Date(),
+        userId: 1,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+      jest.spyOn(service, 'remove').mockResolvedValue(mockDeletedReservation);
       await controller.remove('1');
       expect(service.remove).toHaveBeenCalledWith(1);
     });
 
     it('should throw an error if reservation not found', async () => {
-      jest.spyOn(service, 'remove').mockResolvedValue(null);
+      jest.spyOn(service, 'remove').mockRejectedValue(new NotFoundException());
       
       await expect(controller.remove('1'))
         .rejects.toThrow(NotFoundException);
