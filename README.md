@@ -5,7 +5,6 @@ MovieBooker est une application de réservation de films développée avec Nest.
 ## Accès à l'application
 
 - **API Backend** : [https://movie-booker-vkil.onrender.com/api](https://movie-booker-vkil.onrender.com/api)
-- **Frontend** : [https://roro-moviebooking.netlify.app/](https://roro-moviebooking.netlify.app/)
 
 ## Fonctionnalités
 
