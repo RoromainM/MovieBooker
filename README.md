@@ -105,7 +105,7 @@ npm run test
 
 ## Documentation API
 
-La documentation Swagger est disponible à l'adresse : `[http://localhost:3000/api](https://movie-booker-vkil.onrender.com/api#/)`
+La documentation Swagger est disponible à l'adresse : `http://localhost:3000/api](https://movie-booker-vkil.onrender.com/api#/`
 
 ## Structure du Projet
 
