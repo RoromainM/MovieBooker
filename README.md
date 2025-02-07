@@ -2,6 +2,11 @@
 
 MovieBooker est une application de réservation de films développée avec Nest.js, Next.js et Prisma. Cette application permet aux utilisateurs de réserver des créneaux horaires pour regarder des films, avec une interface moderne et une expérience utilisateur fluide.
 
+## Accès à l'application
+
+- **API Backend** : [https://movie-booker-vkil.onrender.com/api](https://movie-booker-vkil.onrender.com/api)
+- **Frontend** : [https://roro-moviebooking.netlify.app/](https://roro-moviebooking.netlify.app/)
+
 ## Fonctionnalités
 
 - 🎬 Consultation des films à l'affiche via l'API TMDB
@@ -93,8 +98,7 @@ npm run dev
 ### Backend
 ```bash
 cd back
-npm run test       # Tests unitaires
-npm run test:e2e   # Tests end-to-end
+npm run test
 ```
 
 ### Frontend
@@ -102,10 +106,6 @@ npm run test:e2e   # Tests end-to-end
 cd front
 npm run test
 ```
-
-## Documentation API
-
-La documentation Swagger est disponible à l'adresse : `http://localhost:3000/api](https://movie-booker-vkil.onrender.com/api#/`
 
 ## Structure du Projet
 
