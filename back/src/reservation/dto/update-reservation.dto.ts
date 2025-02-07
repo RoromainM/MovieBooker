@@ -1,14 +1,24 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { PartialType } from '@nestjs/swagger';
+import { PartialType } from '@nestjs/mapped-types';
 import { CreateReservationDto } from './create-reservation.dto';
+import { IsOptional, IsNumber, IsDate } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class UpdateReservationDto extends PartialType(CreateReservationDto) {
-  @ApiProperty({ example: '2023-12-31T23:59:59Z', required: false })
-  date?: string;
+  @IsOptional()
+  @Type(() => Date)
+  @IsDate()
+  date?: Date;
 
-  @ApiProperty({ example: 1, required: false })
+  @IsOptional()
+  @Type(() => Date)
+  @IsDate()
+  endDate?: Date;
+
+  @IsOptional()
+  @IsNumber()
   userId?: number;
 
-  @ApiProperty({ example: 12345, required: false })
+  @IsOptional()
+  @IsNumber()
   filmId?: number;
 }

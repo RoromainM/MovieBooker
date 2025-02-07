@@ -6,6 +6,16 @@ import { LoginDto } from './dto/login.dto';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { ExecutionContext } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { beforeEach, describe, it, expect, jest } from '@jest/globals';
+
+interface RegisterResponse {
+  id: number;
+  username: string;
+}
+
+interface LoginResponse {
+  access_token: string;
+}
 
 describe('AuthController', () => {
   let controller: AuthController;
@@ -18,8 +28,10 @@ describe('AuthController', () => {
         {
           provide: AuthService,
           useValue: {
-            register: jest.fn().mockResolvedValue({}),
-            login: jest.fn().mockResolvedValue({ access_token: 'token' }),
+            register: jest.fn<() => Promise<RegisterResponse>>()
+              .mockResolvedValue({ id: 1, username: 'test' }),
+            login: jest.fn<() => Promise<LoginResponse>>()
+              .mockResolvedValue({ access_token: 'token' }),
           },
         },
         JwtService,
@@ -44,24 +56,22 @@ describe('AuthController', () => {
   });
 
   describe('register', () => {
-    it('should call AuthService.register with correct parameters', async () => {
+    it('should create a new user', async () => {
       const registerDto: RegisterDto = { email: 'test@example.com', username: 'test', password: 'test' };
-      await controller.register(registerDto);
+      const expectedResult = { id: 1, username: 'test' };
+      
+      const result = await controller.register(registerDto);
       expect(service.register).toHaveBeenCalledWith(registerDto);
+      expect(result).toEqual(expectedResult);
     });
   });
 
   describe('signIn', () => {
-    it('should call AuthService.login with correct parameters', async () => {
+    it('should call AuthService.login with correct parameters and return access token', async () => {
       const loginDto: LoginDto = { username: 'test', password: 'test' };
-      await controller.signIn(loginDto);
+      const result = await controller.signIn(loginDto);
       expect(service.login).toHaveBeenCalledWith(loginDto.username, loginDto.password);
-    });
-
-    it('should return the result of AuthService.login', async () => {
-      const result = { access_token: 'token' };
-      jest.spyOn(service, 'login').mockResolvedValue(result);
-      expect(await controller.signIn({ username: 'test', password: 'test' })).toBe(result);
+      expect(result).toEqual({ access_token: 'token' });
     });
   });
 

@@ -1,10 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ReservationController } from './reservation.controller';
 import { ReservationService } from './reservation.service';
-import { CreateReservationDto } from './dto/create-reservation.dto';
 import { UpdateReservationDto } from './dto/update-reservation.dto';
+import { CreateReservationDto } from './dto/create-reservation.dto';
 import { NotFoundException } from '@nestjs/common';
 import { Reservation } from '@prisma/client';
+import { beforeEach, describe, it, expect, jest } from '@jest/globals';
 
 describe('ReservationController', () => {
   let controller: ReservationController;
@@ -13,18 +14,16 @@ describe('ReservationController', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [ReservationController],
-      providers: [
-        {
-          provide: ReservationService,
-          useValue: {
-            create: jest.fn(),
-            findAll: jest.fn(),
-            findOne: jest.fn().mockResolvedValue({ id: 1, date: new Date(), endDate: new Date(), createdAt: new Date(), updatedAt: new Date(), userId: 1, filmId: 12345 } as Reservation),
-            update: jest.fn().mockResolvedValue({ id: 1, date: new Date(), endDate: new Date(), createdAt: new Date(), updatedAt: new Date(), userId: 1, filmId: 12345 } as Reservation),
-            remove: jest.fn().mockResolvedValue({ id: 1, date: new Date(), endDate: new Date(), createdAt: new Date(), updatedAt: new Date(), userId: 1, filmId: 12345 } as Reservation),
-          },
+      providers: [{
+        provide: ReservationService,
+        useValue: {
+          create: jest.fn(),
+          findAll: jest.fn(),
+          findOne: jest.fn(),
+          update: jest.fn(),
+          remove: jest.fn(),
         },
-      ],
+      }],
     }).compile();
 
     controller = module.get<ReservationController>(ReservationController);
@@ -35,12 +34,27 @@ describe('ReservationController', () => {
     expect(controller).toBeDefined();
   });
 
-  describe('create', () => {
-    it('should call ReservationService.create with correct parameters', async () => {
-      const createReservationDto: CreateReservationDto = { date: new Date('2023-12-31T10:00:00Z'), endDate: new Date('2023-12-31T12:00:00Z'), userId: 1, filmId: 12345 };
-      await controller.create(createReservationDto);
-      expect(service.create).toHaveBeenCalledWith(createReservationDto);
-    });
+  it('should create a reservation', async () => {
+    const createReservationDto: CreateReservationDto = {
+      filmId: 12345,
+      date: new Date('2023-12-31T10:00:00Z'),
+      endDate: new Date('2023-12-31T12:00:00Z'),
+      userId: 1,
+    };
+
+    const mockReservation: Reservation = {
+      id: 1,
+      filmId: createReservationDto.filmId,
+      date: createReservationDto.date,
+      endDate: createReservationDto.endDate,
+      userId: createReservationDto.userId,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    jest.spyOn(service, 'create').mockResolvedValue(mockReservation);
+
+    expect(await controller.create(createReservationDto)).toEqual(mockReservation);
   });
 
   describe('findAll', () => {
@@ -59,21 +73,28 @@ describe('ReservationController', () => {
     });
 
     it('should throw an error if reservation not found', async () => {
-      jest.spyOn(service, 'findOne').mockResolvedValue(null);
-      await expect(controller.findOne('1')).rejects.toThrow(new NotFoundException('Reservation with ID 1 not found'));
+      jest.spyOn(service, 'findOne').mockRejectedValue(new NotFoundException('Reservation with ID 1 not found'));
+
+      await expect(controller.findOne('1')).rejects.toThrow(NotFoundException);
     });
   });
 
   describe('update', () => {
     it('should call ReservationService.update with correct parameters', async () => {
-      const updateReservationDto: UpdateReservationDto = { date: new Date('2023-12-31T23:59:59Z'), userId: 1, filmId: 12345 };
+      const updateReservationDto: UpdateReservationDto = { 
+        date: new Date('2023-12-31T23:59:59Z'),
+        endDate: new Date('2024-01-01T01:59:59Z'),
+        userId: 1, 
+        filmId: 12345 
+      };
       await controller.update('1', updateReservationDto);
       expect(service.update).toHaveBeenCalledWith(1, updateReservationDto);
     });
 
     it('should throw an error if reservation not found', async () => {
-      jest.spyOn(service, 'update').mockResolvedValue(null);
-      await expect(controller.update('1', {} as UpdateReservationDto)).rejects.toThrow(new NotFoundException('Reservation with ID 1 not found'));
+      jest.spyOn(service, 'update').mockRejectedValue(new NotFoundException('Reservation with ID 1 not found'));
+      await expect(controller.update('1', {} as UpdateReservationDto))
+        .rejects.toThrow(NotFoundException);
     });
   });
 
@@ -84,8 +105,9 @@ describe('ReservationController', () => {
     });
 
     it('should throw an error if reservation not found', async () => {
-      jest.spyOn(service, 'remove').mockResolvedValue(null);
-      await expect(controller.remove('1')).rejects.toThrow(new NotFoundException('Reservation with ID 1 not found'));
+      jest.spyOn(service, 'remove').mockRejectedValue(new NotFoundException('Reservation with ID 1 not found'));
+      await expect(controller.remove('1'))
+        .rejects.toThrow(NotFoundException);
     });
   });
 });

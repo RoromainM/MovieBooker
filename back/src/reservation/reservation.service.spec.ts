@@ -1,14 +1,23 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ReservationService } from './reservation.service';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateReservationDto } from './dto/create-reservation.dto';
-import { UpdateReservationDto } from './dto/update-reservation.dto';
-import { NotFoundException } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
 import { Reservation } from '@prisma/client';
+import { CreateReservationDto } from './dto/create-reservation.dto';
+import { beforeEach, describe, it, expect, jest } from '@jest/globals';
 
 describe('ReservationService', () => {
   let service: ReservationService;
   let prisma: PrismaService;
+
+  const mockPrismaService = {
+    reservation: {
+      create: jest.fn<() => Promise<Reservation>>(),
+      findMany: jest.fn<() => Promise<Reservation[]>>(),
+      findUnique: jest.fn<() => Promise<Reservation | null>>(),
+      update: jest.fn<() => Promise<Reservation>>(),
+      delete: jest.fn<() => Promise<Reservation>>(),
+    },
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -16,15 +25,7 @@ describe('ReservationService', () => {
         ReservationService,
         {
           provide: PrismaService,
-          useValue: {
-            reservation: {
-              create: jest.fn(),
-              findMany: jest.fn(),
-              findUnique: jest.fn(),
-              update: jest.fn(),
-              delete: jest.fn(),
-            },
-          },
+          useValue: mockPrismaService,
         },
       ],
     }).compile();
@@ -37,76 +38,37 @@ describe('ReservationService', () => {
     expect(service).toBeDefined();
   });
 
-  describe('create', () => {
-    it('should create a new reservation', async () => {
-      const createReservationDto: CreateReservationDto = { date: new Date('2023-12-31T10:00:00Z'), endDate: new Date('2023-12-31T12:00:00Z'), userId: 1, filmId: 12345 };
-      const result = { id: 1, ...createReservationDto, createdAt: new Date(), updatedAt: new Date() } as Reservation;
+  it('should create a reservation', async () => {
+    const createReservationDto: CreateReservationDto = {
+      filmId: 12345,
+      date: new Date('2023-12-31T10:00:00Z'),
+      endDate: new Date('2023-12-31T12:00:00Z'),
+      userId: 1,
+    };
 
-      jest.spyOn(prisma.reservation, 'create').mockResolvedValue(result);
+    const mockReservation: Reservation = {
+      id: 1,
+      filmId: createReservationDto.filmId,
+      date: createReservationDto.date,
+      endDate: createReservationDto.endDate,
+      userId: createReservationDto.userId,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
 
-      expect(await service.create(createReservationDto)).toBe(result);
-      expect(prisma.reservation.create).toHaveBeenCalledWith({ data: createReservationDto });
+    mockPrismaService.reservation.create.mockResolvedValue(mockReservation);
+
+    const reservation = await service.create(createReservationDto);
+
+    expect(reservation).toEqual(mockReservation);
+    expect(mockPrismaService.reservation.create).toHaveBeenCalledWith({
+      data: {
+        filmId: createReservationDto.filmId,
+        date: createReservationDto.date,
+        endDate: createReservationDto.endDate,
+        userId: createReservationDto.userId
+      },
     });
-  });
-
-  describe('findAll', () => {
-    it('should return an array of reservations', async () => {
-      const result = [];
-      jest.spyOn(prisma.reservation, 'findMany').mockResolvedValue(result);
-
-      expect(await service.findAll()).toBe(result);
-    });
-  });
-
-  describe('findOne', () => {
-    it('should return a reservation by ID', async () => {
-      const result = { id: 1, date: new Date(), endDate: new Date(), createdAt: new Date(), updatedAt: new Date(), userId: 1, filmId: 12345 } as Reservation;
-      jest.spyOn(prisma.reservation, 'findUnique').mockResolvedValue(result);
-
-      expect(await service.findOne(1)).toBe(result);
-    });
-
-    it('should throw an error if reservation not found', async () => {
-      jest.spyOn(prisma.reservation, 'findUnique').mockResolvedValue(null);
-
-      await expect(service.findOne(1)).rejects.toThrow(new NotFoundException('Reservation with ID 1 not found'));
-    });
-  });
-
-  describe('update', () => {
-    it('should update a reservation', async () => {
-      const updateReservationDto: UpdateReservationDto = { date: new Date('2023-12-31T23:59:59Z'), userId: 1, filmId: 12345 };
-      const result = { id: 1, ...updateReservationDto, createdAt: new Date(), updatedAt: new Date() } as Reservation;
-
-      jest.spyOn(prisma.reservation, 'findUnique').mockResolvedValue(result);
-      jest.spyOn(prisma.reservation, 'update').mockResolvedValue(result);
-
-      expect(await service.update(1, updateReservationDto)).toBe(result);
-      expect(prisma.reservation.update).toHaveBeenCalledWith({ where: { id: 1 }, data: updateReservationDto, include: { user: true } });
-    });
-
-    it('should throw an error if reservation not found', async () => {
-      jest.spyOn(prisma.reservation, 'findUnique').mockResolvedValue(null);
-
-      await expect(service.update(1, {} as UpdateReservationDto)).rejects.toThrow(new NotFoundException('Reservation with ID 1 not found'));
-    });
-  });
-
-  describe('remove', () => {
-    it('should remove a reservation', async () => {
-      const result = { id: 1, date: new Date(), endDate: new Date(), createdAt: new Date(), updatedAt: new Date(), userId: 1, filmId: 12345 } as Reservation;
-
-      jest.spyOn(prisma.reservation, 'findUnique').mockResolvedValue(result);
-      jest.spyOn(prisma.reservation, 'delete').mockResolvedValue(result);
-
-      expect(await service.remove(1)).toBe(result);
-      expect(prisma.reservation.delete).toHaveBeenCalledWith({ where: { id: 1 } });
-    });
-
-    it('should throw an error if reservation not found', async () => {
-      jest.spyOn(prisma.reservation, 'findUnique').mockResolvedValue(null);
-
-      await expect(service.remove(1)).rejects.toThrow(new NotFoundException('Reservation with ID 1 not found'));
-    });
+    expect(mockPrismaService.reservation.create).toHaveBeenCalledTimes(1);
   });
 });

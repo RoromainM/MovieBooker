@@ -1,10 +1,16 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AuthService } from './auth.service';
-import { UserService } from 'src/user/user.service';
+import { beforeEach, describe, it, expect, jest } from '@jest/globals';
+import { UserService } from '../user/user.service';
 import { JwtService } from '@nestjs/jwt';
-import { UnauthorizedException } from '@nestjs/common';
+import { ConflictException, UnauthorizedException } from '@nestjs/common';
 import { RegisterDto } from './dto/register.dto';
 import * as bcrypt from 'bcrypt';
+
+jest.mock('bcrypt', () => ({
+  hash: jest.fn(),
+  compare: jest.fn()
+}));
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -51,7 +57,7 @@ describe('AuthService', () => {
     it('should create a new user if user does not exist', async () => {
       const registerDto: RegisterDto = { email: 'test@example.com', username: 'test', password: 'test' };
       jest.spyOn(userService, 'findOne').mockResolvedValue(null);
-      jest.spyOn(userService, 'createUser').mockResolvedValue({} as any);
+      jest.spyOn(userService, 'createUser').mockResolvedValue({ id: 1, email: 'test@example.com', username: 'test' } as any);
       jest.spyOn(bcrypt, 'hash').mockResolvedValue('hashedPassword' as never);
 
       const result = await service.register(registerDto);
@@ -59,12 +65,11 @@ describe('AuthService', () => {
       expect(userService.findOne).toHaveBeenCalledWith('test');
       expect(bcrypt.hash).toHaveBeenCalledWith('test', 10);
       expect(userService.createUser).toHaveBeenCalledWith({
-        id: 1,
         email: 'test@example.com',
         username: 'test',
         password: 'hashedPassword',
       });
-      expect(result).toEqual({});
+      expect(result).toEqual({ id: 1, email: 'test@example.com', username: 'test' });
     });
   });
 

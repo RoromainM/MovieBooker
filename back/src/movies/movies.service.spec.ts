@@ -1,14 +1,24 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { MoviesService } from './movies.service';
 import { HttpService } from '@nestjs/axios';
-import { of, throwError } from 'rxjs';
+import { ConfigService } from '@nestjs/config';
 import { AxiosHeaders, AxiosResponse } from 'axios';
-import { Movie } from './interface/movie.interface';
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { Observable, of } from 'rxjs';
+import { Movie } from './entities/movie.entity';
+import { beforeEach, describe, it, expect, jest } from '@jest/globals';
 
 describe('MoviesService', () => {
   let service: MoviesService;
   let httpService: HttpService;
+  let configService: ConfigService;
+
+  const mockHttpService = {
+    get: jest.fn()
+  };
+
+  const mockConfigService = {
+    get: jest.fn().mockReturnValue('mock_api_key')
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -16,15 +26,18 @@ describe('MoviesService', () => {
         MoviesService,
         {
           provide: HttpService,
-          useValue: {
-            get: jest.fn(),
-          },
+          useValue: mockHttpService
         },
+        {
+          provide: ConfigService,
+          useValue: mockConfigService
+        }
       ],
     }).compile();
 
     service = module.get<MoviesService>(MoviesService);
     httpService = module.get<HttpService>(HttpService);
+    configService = module.get<ConfigService>(ConfigService);
   });
 
   it('should be defined', () => {
@@ -40,7 +53,9 @@ describe('MoviesService', () => {
     });
 
     it('should throw an error if the request fails', async () => {
-      jest.spyOn(httpService, 'get').mockReturnValue(throwError(() => new Error('An error happened!')));
+      jest.spyOn(httpService, 'get').mockImplementation(() => {
+        throw new Error('An error happened!');
+      });      
 
       await expect(service.findById(1)).rejects.toThrow('An error happened!');
     });
@@ -55,7 +70,9 @@ describe('MoviesService', () => {
     });
 
     it('should throw an error if the request fails', async () => {
-      jest.spyOn(httpService, 'get').mockReturnValue(throwError(() => new Error('An error happened!')));
+      jest.spyOn(httpService, 'get').mockImplementation(() => {
+        throw new Error('An error happened!');
+      });  
 
       await expect(service.findByTitle('title')).rejects.toThrow('An error happened!');
     });
@@ -70,9 +87,39 @@ describe('MoviesService', () => {
     });
 
     it('should throw an error if the request fails', async () => {
-      jest.spyOn(httpService, 'get').mockReturnValue(throwError(() => new Error('An error happened!')));
+      jest.spyOn(httpService, 'get').mockImplementation(() => {
+        throw new Error('An error happened!');
+      });  
 
       await expect(service.findByPage(1)).rejects.toThrow('An error happened!');
+    });
+  });
+
+  describe('findAll', () => {
+    it('should return an array of movies', async () => {
+      const mockMovies: Movie[] = [
+        {
+          id: 1,
+          title: 'Test Movie',
+          description: 'Test Description',
+          releaseDate: new Date(),
+          duration: 120,
+          genre: 'Action'
+        }
+      ];
+
+      const mockResponse: AxiosResponse = {
+        data: mockMovies,
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config: { headers: new AxiosHeaders() }
+      };
+
+      mockHttpService.get.mockImplementation(() => of(mockResponse));
+
+      const result = await service.findAll();
+      expect(result).toEqual(mockMovies);
     });
   });
 });

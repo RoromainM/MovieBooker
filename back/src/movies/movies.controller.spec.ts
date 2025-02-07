@@ -1,9 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { MoviesController } from './movies.controller';
 import { MoviesService } from './movies.service';
-import { of } from 'rxjs';
-import { AxiosHeaders, AxiosResponse } from 'axios';
-import { Movie } from './interface/movie.interface';
+import { Movie } from './entities/movie.entity';  // Update this import
+import { beforeEach, describe, it, expect, jest } from '@jest/globals';
+import { AxiosRequestHeaders, AxiosResponse } from 'axios';
 
 describe('MoviesController', () => {
   let controller: MoviesController;
@@ -16,12 +16,12 @@ describe('MoviesController', () => {
         {
           provide: MoviesService,
           useValue: {
-            findAll: jest.fn().mockReturnValue(of([])),
-            findById: jest.fn().mockReturnValue(of({})),
-            findByPage: jest.fn().mockReturnValue(of([])),
-            findByTitle: jest.fn().mockReturnValue(of([])),
-            findAllGenres: jest.fn().mockReturnValue(of([])),
-            getNowPlaying: jest.fn().mockReturnValue(of([])),
+            findAll: jest.fn(),
+            findById: jest.fn(),
+            findByPage: jest.fn(),
+            findByTitle: jest.fn(),
+            findAllGenres: jest.fn(),
+            getNowPlaying: jest.fn(),
           },
         },
       ],
@@ -37,7 +37,14 @@ describe('MoviesController', () => {
 
   describe('findAll', () => {
     it('should return an array of movies', async () => {
-      const result = [];
+      const result: Movie[] = [{
+        id: 1,
+        title: 'Test Movie',
+        description: 'Test Description',
+        genre: 'Action',
+        releaseDate: new Date('2025-02-07T08:54:04.001Z').toISOString() as unknown as Date,
+        duration: 120
+      }];
       jest.spyOn(service, 'findAll').mockResolvedValue(result);
       const res = { json: jest.fn() };
       await controller.findAll(res);
@@ -47,11 +54,20 @@ describe('MoviesController', () => {
 
   describe('findById', () => {
     it('should return a movie by id', async () => {
-      const result: Movie = { id: 1, title: 'Test Movie', description: 'Test Description', genre: 'Test Genre', releaseDate: new Date() };
-      jest.spyOn(service, 'findById').mockResolvedValue(result);
+      const mockMovie: Movie = {
+        id: 1,
+        title: 'Test Movie',
+        description: 'Test Description',
+        genre: 'Test Genre',
+        releaseDate: new Date('2025-02-07T08:28:50.713Z').toISOString() as unknown as Date,
+        duration: 120
+      };
+
+      jest.spyOn(service, 'findById').mockResolvedValue(mockMovie);
+
       const res = { json: jest.fn() };
       await controller.findById(res, 1);
-      expect(res.json).toHaveBeenCalledWith(result);
+      expect(res.json).toHaveBeenCalledWith(mockMovie);
     });
   });
 
@@ -87,9 +103,17 @@ describe('MoviesController', () => {
 
   describe('getAllNowPlaying', () => {
     it('should return an array of now playing movies', async () => {
-      const result: AxiosResponse<Movie[]> = { data: [], status: 200, statusText: 'OK', headers: new AxiosHeaders(), config: { headers: new AxiosHeaders() } };
-      jest.spyOn(service, 'getNowPlaying').mockReturnValue(of(result).toPromise() as Promise<AxiosResponse<Movie[]>>);
-      expect(await controller.getAllNowPlaying()).toBe(result);
+      const mockMovies: AxiosResponse<Movie[]> = {
+        data: [{ id: 1, title: 'Test Movie', description: 'Test Description', genre: 'Test Genre', releaseDate: new Date(), duration: 120 }],
+        status: 200,
+        statusText: 'OK',
+        headers: { 'content-type': 'application/json' } as unknown as AxiosRequestHeaders,
+        config: { headers: { 'content-type': 'application/json' } as unknown as AxiosRequestHeaders },
+      };
+      jest.spyOn(service, 'getNowPlaying').mockResolvedValue(mockMovies);
+      
+      const result = await controller.getAllNowPlaying();
+      expect(result).toEqual(mockMovies);
     });
   });
 });

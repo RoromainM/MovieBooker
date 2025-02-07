@@ -11,12 +11,10 @@ export class ReservationService {
   async create(createReservationDto: CreateReservationDto): Promise<Reservation> {
     return this.prisma.reservation.create({
       data: {
+        filmId: createReservationDto.filmId,
         date: new Date(createReservationDto.date),
-        endDate: new Date(createReservationDto.date),
-        filmId: createReservationDto.movieId,
-        user: {
-          connect: { id: 1 },
-        },
+        endDate: new Date(createReservationDto.endDate),
+        userId: createReservationDto.userId,
       },
     });
   }
@@ -45,7 +43,11 @@ export class ReservationService {
   async update(id: number, updateReservationDto: UpdateReservationDto): Promise<Reservation> {
     return this.prisma.reservation.update({
       where: { id },
-      data: updateReservationDto,
+      data: {
+        ...updateReservationDto,
+        date: updateReservationDto.date ? new Date(updateReservationDto.date) : undefined,
+        endDate: updateReservationDto.endDate ? new Date(updateReservationDto.endDate) : undefined,
+      },
     });
   }
 

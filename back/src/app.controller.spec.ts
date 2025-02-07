@@ -1,6 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import * as jest from 'jest-mock';
+import { beforeEach, describe, it, expect } from '@jest/globals';
 
 describe('AppController', () => {
   let appController: AppController;
