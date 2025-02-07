@@ -92,8 +92,13 @@ describe('ReservationController', () => {
     });
 
     it('should throw an error if reservation not found', async () => {
-      jest.spyOn(service, 'update').mockRejectedValue(new NotFoundException('Reservation with ID 1 not found'));
-      await expect(controller.update('1', {} as UpdateReservationDto))
+      const updateReservationDto: UpdateReservationDto = { 
+        date: new Date('2023-12-31T23:59:59Z'),
+        endDate: new Date('2024-01-01T01:59:59Z')
+      };
+      jest.spyOn(service, 'update').mockResolvedValue(null);
+      
+      await expect(controller.update('1', updateReservationDto))
         .rejects.toThrow(NotFoundException);
     });
   });
@@ -105,7 +110,8 @@ describe('ReservationController', () => {
     });
 
     it('should throw an error if reservation not found', async () => {
-      jest.spyOn(service, 'remove').mockRejectedValue(new NotFoundException('Reservation with ID 1 not found'));
+      jest.spyOn(service, 'remove').mockResolvedValue(null);
+      
       await expect(controller.remove('1'))
         .rejects.toThrow(NotFoundException);
     });

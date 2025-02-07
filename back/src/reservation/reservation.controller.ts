@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, NotFoundException } from '@nestjs/common';
 import { ReservationService } from './reservation.service';
 import { CreateReservationDto } from './dto/create-reservation.dto';
 import { UpdateReservationDto } from './dto/update-reservation.dto';
@@ -33,14 +33,22 @@ export class ReservationController {
   @Patch(':id')
   @ApiOperation({ summary: 'Update a reservation by ID' })
   @ApiResponse({ status: 404, description: 'Reservation not found' })
-  update(@Param('id') id: string, @Body() updateReservationDto: UpdateReservationDto) {
-    return this.reservationService.update(+id, updateReservationDto);
+  async update(@Param('id') id: string, @Body() updateReservationDto: UpdateReservationDto) {
+    const result = await this.reservationService.update(+id, updateReservationDto);
+    if (!result) {
+      throw new NotFoundException(`Reservation with ID ${id} not found`);
+    }
+    return result;
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Delete a reservation by ID' })
   @ApiResponse({ status: 404, description: 'Reservation not found' })
-  remove(@Param('id') id: string) {
-    return this.reservationService.remove(+id);
+  async remove(@Param('id') id: string) {
+    const result = await this.reservationService.remove(+id);
+    if (!result) {
+      throw new NotFoundException(`Reservation with ID ${id} not found`);
+    }
+    return result;
   }
 }
